@@ -2792,7 +2792,7 @@ function renderFlashcards() {
   </div>
   <div class="flashcard-controls">
     <button class="btn btn-secondary" onclick="fcPrev()" ${appState.fcIndex===0?'disabled':''}>Previous</button>
-    <button class="btn ${isKnown?'btn-success':'btn-secondary'}" onclick="toggleFcKnown('${cardKey.replace(/'/g,"\\'")}');render()">${isKnown?'Known':'Mark Known'}</button>
+    <button type="button" class="btn ${isKnown?'btn-success':'btn-secondary'}" onclick='toggleFcKnown(${JSON.stringify(cardKey)});render()'>${isKnown?'Known':'Mark Known'}</button>
     <button class="btn btn-primary" onclick="fcNext(${cards.length})">Next</button>
   </div>
 </div></div>`;
