@@ -2595,6 +2595,26 @@ function markCodeCompleted(index) {
   saveProgress(p);
 }
 
+function saveQuizSession() {
+  localStorage.setItem('mse342_quizSession', JSON.stringify({
+    quizTopic: appState.quizTopic,
+    quizIndex: appState.quizIndex,
+    quizScore: appState.quizScore,
+    quizTotal: appState.quizTotal,
+    quizDone: appState.quizDone,
+    quizAnswered: appState.quizAnswered,
+    quizSelected: appState.quizSelected
+  }));
+}
+
+function loadQuizSession() {
+  try { return JSON.parse(localStorage.getItem('mse342_quizSession')); } catch { return null; }
+}
+
+function clearQuizSession() {
+  localStorage.removeItem('mse342_quizSession');
+}
+
 function updateStreak() {
   const p = getProgress();
   const today = new Date().toDateString();
@@ -2614,7 +2634,15 @@ function updateStreak() {
 function navigate(page) {
   if (appState.mockTimerInterval) { clearInterval(appState.mockTimerInterval); appState.mockTimerInterval = null; }
   appState.page = page;
-  if (page === 'quiz') { appState.quizIndex = 0; appState.quizScore = 0; appState.quizTotal = 0; appState.quizDone = false; appState.quizAnswered = false; }
+  if (page === 'quiz') {
+    const saved = loadQuizSession();
+    if (saved && !saved.quizDone) {
+      Object.assign(appState, saved);
+    } else {
+      appState.quizIndex = 0; appState.quizScore = 0; appState.quizTotal = 0; appState.quizDone = false; appState.quizAnswered = false;
+      clearQuizSession();
+    }
+  }
   render();
   document.querySelectorAll('.nav-item').forEach(el => {
     el.classList.toggle('active', el.dataset.page === page);
@@ -2856,6 +2884,7 @@ function renderQuiz() {
 
 function startQuiz(topic) {
   appState.quizTopic = topic; appState.quizIndex = 0; appState.quizScore = 0; appState.quizTotal = 0; appState.quizDone = false; appState.quizAnswered = false; appState.quizSelected = -1;
+  saveQuizSession();
   render();
 }
 
@@ -2866,6 +2895,7 @@ function selectQuizAnswer(i) {
   const qn = QUIZZES[appState.quizTopic][appState.quizIndex];
   appState.quizTotal++;
   if (i === qn.a) appState.quizScore++;
+  saveQuizSession();
   render();
 }
 
@@ -2877,6 +2907,9 @@ function nextQuizQ() {
   if (appState.quizIndex >= questions.length) {
     appState.quizDone = true;
     recordQuizScore(appState.quizTopic, appState.quizScore, appState.quizTotal);
+    clearQuizSession();
+  } else {
+    saveQuizSession();
   }
   render();
 }
